@@ -101,12 +101,12 @@ class CartController extends GetxController {
       productQuantities.clear();
       totalAmount.value = 0;
       fetchcart.clear();
-      
+
       // Clear product controller cart data
       final productController = Get.find<ProductController>();
       productController.cartProducts.clear();
       productController.productCounts.clear();
-      
+
       // Refresh UI
       update();
       productController.update();
