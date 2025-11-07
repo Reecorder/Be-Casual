@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'package:be_casual_new2/presentation/product/cart/checkout.screen.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:be_casual_new2/model/color.model.dart';
@@ -47,8 +48,8 @@ class _SplashScreenState extends State<SplashScreen> {
       );
       Get.to(() => const BaseScreen());
     } else {
-        //  Get.to(() => const LoginScreen());
-         Get.to(() => const BaseScreen());
+      Get.to(() => const LoginScreen());
+      // Get.to(() => const BaseScreen());
     }
   }
 

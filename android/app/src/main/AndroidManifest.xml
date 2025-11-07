@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Allow this app to access the Internet -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
-        android:label="be_casual_new2"
+        android:label="Be Casual"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

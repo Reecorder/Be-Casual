@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:be_casual_new2/common/add_to_cart.buttn.dart';
 import 'package:be_casual_new2/common/common.widget.dart';
+import 'package:be_casual_new2/controller/cart.controller.dart';
 import 'package:be_casual_new2/controller/product.controller.dart';
 import 'package:be_casual_new2/model/color.model.dart';
 import 'package:be_casual_new2/model/fonts.model.dart';
@@ -207,7 +208,16 @@ class ProductTile extends StatelessWidget {
     return count == 0
         ? Addtocartbutton(
           onpressed: () {
+            // Update product controller for UI (incrementCount will sync to CartController)
             controller.incrementCount(productsModel.id!);
+            controller.addToCart(productsModel);
+
+            Get.snackbar(
+              "Added to Cart",
+              "Product has been added to your cart",
+              backgroundColor: Colors.green.shade100,
+              colorText: Colors.black,
+            );
           },
         )
         : OutlinedButton(

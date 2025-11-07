@@ -1,4 +1,5 @@
 import 'package:be_casual_new2/common/common.widget.dart';
+import 'package:be_casual_new2/controller/cart.controller.dart';
 import 'package:be_casual_new2/controller/product.controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
@@ -39,31 +40,42 @@ class HomeTopSection extends StatelessWidget {
           ),
 
           /* cart icon */
-          Stack(
-            children: [
-              const Icon(Feather.shopping_bag),
-              Positioned(
-                right: 0,
-                bottom: 6,
-                child: Obx(() {
-                  final total = productcontroller.productCounts.values.fold(
-                    0,
-                    (sum, count) => sum + count,
-                  );
-                  return Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      '$total',
-                      style: const TextStyle(fontSize: 10, color: Colors.white),
-                    ),
-                  );
-                }),
-              ),
-            ],
+          InkWell(
+            onTap: () {
+              final cartController = Get.put(CartController());
+              // Caller is handling navigation, so avoid double navigation inside fetchCart
+              cartController.fetchCart(navigateToCart: false);
+              Get.toNamed('/cart', arguments: {'fromTab': true});
+            },
+            child: Stack(
+              children: [
+                const Icon(Feather.shopping_bag),
+                Positioned(
+                  right: 0,
+                  bottom: 6,
+                  child: Obx(() {
+                    final total = productcontroller.productCounts.values.fold(
+                      0,
+                      (sum, count) => sum + count,
+                    );
+                    return Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '$total',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: Colors.white,
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ],
+            ),
           ),
         ],
       ),

@@ -11,25 +11,25 @@ class BaseController extends GetxController {
   List<IconData> icons = [
     Feather.home,
     Feather.search,
-    // Feather.shopping_cart,
+    Feather.shopping_cart,
     Feather.box,
-    Feather.user
+    Feather.user,
   ];
 
   List<String> screennames = [
     "Dashboard",
     "Search",
-    // "Cart",
+    "Cart",
     "Order",
-    "Profile"
+    "Profile",
   ];
 
   List<Widget> screens = [
     const DashboardScreen(),
-   const SearchScreen(),
-    // const CartScreen(),
+    const SearchScreen(),
+    const CartScreen(fromTab: false),
     const OrderScreen(),
-     ProfileScreen(),
+    ProfileScreen(),
   ];
 
   void onchange({required int index}) => selected.value = index;

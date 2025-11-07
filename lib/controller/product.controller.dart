@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:async';
 import 'dart:developer';
 import 'package:be_casual_new2/model/products.dart';
 import 'package:be_casual_new2/services/api.service.dart';
@@ -7,6 +7,7 @@ import 'package:be_casual_new2/services/endpoints.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:be_casual_new2/controller/cart.controller.dart';
 
 class ProductController extends GetxController {
   final reviewController = TextEditingController();
@@ -22,23 +23,39 @@ class ProductController extends GetxController {
     selectedAction.value = action;
   }
 
-// In ProductController
+  // In ProductController
   RxMap<String, String> selectedSizes = <String, String>{}.obs;
   void selectSizeForProduct(String productId, String size) {
     selectedSizes[productId] = size;
   }
 
-// -------------------
+  // -------------------
   // This is where we store products added to the cart with their quantities
   RxMap<String, ProductsModel> cartProducts = <String, ProductsModel>{}.obs;
 
   void addToCart(ProductsModel product) {
-    if ((productCounts[product.id] ?? 0) > 0) {
+    // Ensure there's at least 1 quantity when adding to cart
+    final pid = product.id ?? '';
+    if (productCounts[pid] == null || productCounts[pid] == 0) {
+      productCounts[pid] = 1;
+    }
+
+    // Ensure selected size exists: if not selected, pick the first available size (if any)
+    final currentSize = selectedSizes[pid] ?? '';
+    if (currentSize.isEmpty) {
+      final fallbackSize =
+          product.size != null && product.size!.isNotEmpty
+              ? product.size!.first
+              : '';
+      selectedSizes[pid] = fallbackSize;
+    }
+
+    if ((productCounts[pid] ?? 0) > 0) {
       // Ensure the product id is non-nullable when using it as a key in the map
-      cartProducts[product.id ?? 'default_key'] =
+      cartProducts[pid] =
           product; // Fallback to a default key if product.id is null
     } else {
-      cartProducts.remove(product.id);
+      cartProducts.remove(pid);
     }
   }
 
@@ -49,7 +66,19 @@ class ProductController extends GetxController {
     // Then, fetch the product (e.g. from the product list or controller) to pass to addToCart
     final product = products.firstWhere((product) => product.id == productId);
     addToCart(
-        product); // Now we're passing the product object instead of the count
+      product,
+    ); // Now we're passing the product object instead of the count
+    // Sync with CartController quantities
+    try {
+      final cartController = Get.find<CartController>();
+      cartController.productQuantities[productId] = productCounts[productId]!;
+      cartController.updateTotalAmount();
+      // Also sync to server cart (fire-and-forget). This will create/update the server cart.
+      unawaited(cartController.createCart());
+    } catch (e) {
+      // CartController may not be initialized in some contexts; ignore if not found
+      // print('CartController not found to sync counts: $e');
+    }
   }
 
   void decrementCount(String productId) {
@@ -59,6 +88,21 @@ class ProductController extends GetxController {
       // Fetch the product to pass to addToCart
       final product = products.firstWhere((product) => product.id == productId);
       addToCart(product); // Pass the actual product object
+      // Sync with CartController quantities
+      try {
+        final cartController = Get.find<CartController>();
+        if ((productCounts[productId] ?? 0) > 0) {
+          cartController.productQuantities[productId] =
+              productCounts[productId]!;
+        } else {
+          cartController.productQuantities.remove(productId);
+        }
+        cartController.updateTotalAmount();
+        // Update server cart as well
+        unawaited(cartController.createCart());
+      } catch (e) {
+        // ignore if cart controller not present
+      }
     }
   }
 
@@ -97,15 +141,16 @@ class ProductController extends GetxController {
     cartscreateLoading.value = true;
     String endpoint = Endpoints.cartCreate;
 
-    final cartItems = cartProducts.values.map((product) {
-      final productId = product.id ?? "";
-      return {
-        "product": productId,
-        "qty": productCounts[productId] ?? 1,
-        "price": product.originalPrice,
-        "selectedSize": selectedSizes[productId] ?? ""
-      };
-    }).toList();
+    final cartItems =
+        cartProducts.values.map((product) {
+          final productId = product.id ?? "";
+          return {
+            "product": productId,
+            "qty": productCounts[productId] ?? 1,
+            "price": product.originalPrice,
+            "selectedSize": selectedSizes[productId] ?? "",
+          };
+        }).toList();
 
     final requestData = {
       "user": await getCookie(key: "userId"),
@@ -114,30 +159,47 @@ class ProductController extends GetxController {
 
     log("Cart Create Request Data: $requestData");
     try {
-      final response = await APIClient(endpoint).post(jsonEncode(requestData));
+      // Pass the request map directly to APIClient/Dio so it can serialize JSON.
+      final response = await APIClient(endpoint).post(requestData);
       if (response != null) {
         log(" Response: ${response.data}");
         final item = response.data["data"]["items"];
         log("items: ${item}");
         if (item != null) {
           // Show success message
-          Get.snackbar("Success", "cart create!",
-              backgroundColor: Colors.green, colorText: Colors.white);
+          Get.snackbar(
+            "Success",
+            "cart create!",
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+          );
           // Get.to(() =>  CartScreen(
           // ));
         } else {
-          Get.snackbar("Error", "items not found",
-              backgroundColor: Colors.red, colorText: Colors.white);
+          Get.snackbar(
+            "Error",
+            "items not found",
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
         }
       } else {
-        Get.snackbar("Error", response?.data["message"] ?? "failed",
-            backgroundColor: Colors.red, colorText: Colors.white);
+        Get.snackbar(
+          "Error",
+          response?.data["message"] ?? "failed",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
       }
     } on DioException catch (e) {
       final errorMessage = e.response?.data?["message"] ?? "Invalid";
 
-      Get.snackbar("Error", errorMessage,
-          backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar(
+        "Error",
+        errorMessage,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
 
       log("Dio Error: $errorMessage");
     }
@@ -171,18 +233,22 @@ class ProductController extends GetxController {
             snackPosition: SnackPosition.TOP,
             backgroundColor: Colors.red,
             colorText: Colors.white,
-             duration: const Duration(seconds: 5),
+            duration: const Duration(seconds: 5),
           );
         }
 
         log("Parsed products Count: ${products.length}");
-        log("First products Name: '${products.first.name}'");
+        // log("First products Name: '${products.first.name}'");
       }
     } on DioException catch (e) {
       final errorMessage =
           e.response?.data?["message"] ?? "Something went wrong";
-      Get.snackbar("Error", errorMessage,
-          backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar(
+        "Error",
+        errorMessage,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
     productsidfindLoading.value = false;
   }
@@ -215,8 +281,12 @@ class ProductController extends GetxController {
     } on DioException catch (e) {
       final errorMessage =
           e.response?.data?["message"] ?? "Something went wrong";
-      Get.snackbar("Error", errorMessage,
-          backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar(
+        "Error",
+        errorMessage,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
 
     allproductsfindLoading.value = false;

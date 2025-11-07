@@ -31,31 +31,37 @@ class _DesignerDetailScreenState extends State<DesignerDetailScreen> {
         child: CommonAppbar(
           title: "A Brand Gives you Identity",
           subtitle: "Lorem Ipsum is simply dummy text of the printing",
-          icon: Stack(
-            children: [
-              const Icon(Feather.shopping_bag),
-              Positioned(
-                right: 0,
-                bottom: 6,
-                child: Obx(() {
-                  final total = productcontroller.productCounts.values.fold(
-                    0,
-                    (sum, count) => sum + count,
-                  );
-                  return Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      '$total',
-                      style: const TextStyle(fontSize: 10, color: Colors.white),
-                    ),
-                  );
-                }),
-              ),
-            ],
+          icon: GestureDetector(
+            onTap: () => Get.toNamed('/cart', arguments: {'fromTab': true}),
+            child: Stack(
+              children: [
+                const Icon(Feather.shopping_bag),
+                Positioned(
+                  right: 0,
+                  bottom: 6,
+                  child: Obx(() {
+                    final total = productcontroller.productCounts.values.fold(
+                      0,
+                      (sum, count) => sum + count,
+                    );
+                    return Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '$total',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: Colors.white,
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ],
+            ),
           ),
           divider: true,
         ),

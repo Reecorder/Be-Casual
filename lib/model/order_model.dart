@@ -28,6 +28,8 @@ class OrderModel {
   final String? orderId;
   final Cart? cart;
   final Address? address;
+  final String? cartId;
+  final String? addressId;
   final int? totalAmount;
   final String? paymentMethod;
   final String? status;
@@ -39,6 +41,8 @@ class OrderModel {
     this.orderId,
     this.cart,
     this.address,
+    this.cartId,
+    this.addressId,
     this.totalAmount,
     this.paymentMethod,
     this.status,
@@ -47,11 +51,32 @@ class OrderModel {
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
+    // cart and address can be either nested objects or plain id strings.
+    Cart? cartObj;
+    String? cartId;
+    if (json['cart'] is Map<String, dynamic>) {
+      cartObj = Cart.fromJson(json['cart'] as Map<String, dynamic>);
+    } else if (json['cart'] is String) {
+      cartId = json['cart'] as String;
+      cartObj = null;
+    }
+
+    Address? addressObj;
+    String? addressId;
+    if (json['address'] is Map<String, dynamic>) {
+      addressObj = Address.fromJson(json['address'] as Map<String, dynamic>);
+    } else if (json['address'] is String) {
+      addressId = json['address'] as String;
+      addressObj = null;
+    }
+
     return OrderModel(
       id: json['id'],
       orderId: json['orderId'],
-      cart: json['cart'] != null ? Cart.fromJson(json['cart']) : null,
-      address: json['address'] != null ? Address.fromJson(json['address']) : null,
+      cart: cartObj,
+      address: addressObj,
+      cartId: cartId,
+      addressId: addressId,
       totalAmount: json['totalAmount'],
       paymentMethod: json['paymentMethod'],
       status: json['status'],
@@ -64,8 +89,8 @@ class OrderModel {
     return {
       'id': id,
       'orderId': orderId,
-      'cart': cart?.toJson(),
-      'address': address?.toJson(),
+      'cart': cart?.toJson() ?? cartId,
+      'address': address?.toJson() ?? addressId,
       'totalAmount': totalAmount,
       'paymentMethod': paymentMethod,
       'status': status,
@@ -84,9 +109,10 @@ class Cart {
 
   factory Cart.fromJson(Map<String, dynamic> json) {
     return Cart(
-      items: (json['items'] as List<dynamic>?)
-          ?.map((item) => CartItem.fromJson(item))
-          .toList(),
+      items:
+          (json['items'] as List<dynamic>?)
+              ?.map((item) => CartItem.fromJson(item))
+              .toList(),
       totalPrice: json['totalPrice'],
       totalQty: json['totalQty'],
     );

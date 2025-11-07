@@ -29,101 +29,123 @@ class _FetchCartScreenState extends State<FetchCartScreen> {
 
       return ListView.builder(
         shrinkWrap: true,
-        physics:const ScrollPhysics(),
+        physics: const ScrollPhysics(),
         itemCount: cartList.length,
         itemBuilder: (context, index) {
           final cartItem = cartList[index];
 
           if (cartItem.items != null && cartItem.items!.isNotEmpty) {
             return Column(
-              children: cartItem.items!.map((item) {
-                final product = item.product;
-                final productitems = item;
-                return Padding(
-                  padding: const EdgeInsets.all(15),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      /* product image */
-                      ClipRRect(
-                          borderRadius: BorderRadius.circular(5),
-                          child: Image(
-                            // image: AssetImage(
-                            //   widget.cartModel.image.toString(),
-                            // ),
-                            image: NetworkImage(
-                                // widget.product!.images!.first.url.toString()),
-                                product!.images!.first.url.toString()),
-                            height: 160,
-                            width: 120,
-                            fit: BoxFit.cover,
-                          )),
-                      spacer(width: 10),
-                      Expanded(
-                          child: Column(
+              children:
+                  cartItem.items!.map((item) {
+                    final product = item.product;
+                    final productitems = item;
+                    return Padding(
+                      padding: const EdgeInsets.all(15),
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          /* product name  */
-                          Text(
-                            product.name.toString(),
-                            style: TextStyle(
-                                color: AppColors.primary,
-                                fontFamily: Fonts.medium),
+                          /* product image */
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(5),
+                            child:
+                                (product != null &&
+                                        product.images != null &&
+                                        product.images!.isNotEmpty)
+                                    ? Image(
+                                      image: NetworkImage(
+                                        product.images!.first.url.toString(),
+                                      ),
+                                      height: 160,
+                                      width: 120,
+                                      fit: BoxFit.cover,
+                                    )
+                                    : Container(
+                                      height: 160,
+                                      width: 120,
+                                      color: Colors.grey[300],
+                                      child: const Icon(
+                                        Icons.image_not_supported,
+                                        size: 48,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
                           ),
-                          /* description */
-                          Text(
-                            product.description.toString(),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: AppColors.primary.withOpacity(0.5),
-                              fontSize: 12,
-                            ),
-                          ),
-                          /* price */
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 5),
-                            child: Text(
-                              // widget.isItemAddRemoveButton == true
-                              //     ? widget.cartModel.price.toString()
-                              //     : "${widget.cartModel.price} x 3",
-                              "\$${productitems.price.toString()}",
-                              style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontFamily: Fonts.medium,
-                                  fontSize: 14),
-                            ),
-                          ),
-                          Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: Text(
-                                  // "Size:${widget.product!.size.toString()}",
-                                  //  "Size: ${widget.selectedSize ?? 'M'}",
-
-                                  // "Size: ${widget.product!.size![productcontroller.selectedIndex.value].toString() ?? "M"}",
-                                  "Size: ${productitems.selectedSize.toString()}",
+                          spacer(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                /* product name  */
+                                Text(
+                                  product?.name?.toString() ?? '',
                                   style: TextStyle(
+                                    color: AppColors.primary,
+                                    fontFamily: Fonts.medium,
+                                  ),
+                                ),
+                                /* description */
+                                Text(
+                                  product?.description?.toString() ?? '',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: AppColors.primary.withOpacity(0.5),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                /* price */
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 5,
+                                  ),
+                                  child: Text(
+                                    // widget.isItemAddRemoveButton == true
+                                    //     ? widget.cartModel.price.toString()
+                                    //     : "${widget.cartModel.price} x 3",
+                                    "\$${productitems.price.toString()}",
+                                    style: TextStyle(
                                       color: AppColors.primary,
                                       fontFamily: Fonts.medium,
-                                      fontSize: 14))),
-                          /* add/ remove button */
-                          Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: Text(
-                              "Quantity:${productitems.qty.toString()}",
-                              style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontFamily: Fonts.medium,
-                                  fontSize: 14),
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    // "Size:${widget.product!.size.toString()}",
+                                    //  "Size: ${widget.selectedSize ?? 'M'}",
+
+                                    // "Size: ${widget.product!.size![productcontroller.selectedIndex.value].toString() ?? "M"}",
+                                    "Size: ${productitems.selectedSize.toString()}",
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontFamily: Fonts.medium,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                                /* add/ remove button */
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    "Quantity:${productitems.qty.toString()}",
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontFamily: Fonts.medium,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                                // widget.isItemAddRemoveButton == true ? itemAddRemoveButton : spacer()
+                              ],
                             ),
-                          )
-                          // widget.isItemAddRemoveButton == true ? itemAddRemoveButton : spacer()
+                          ),
                         ],
-                      ))
-                    ],
-                  ),
-                );
-              }).toList(),
+                      ),
+                    );
+                  }).toList(),
             );
           } else {
             return ListTile(

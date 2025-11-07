@@ -24,9 +24,8 @@ class AuthController extends GetxController {
   /* change login obsecure function */
   // get changeLoginObsecure => loginObsecure.value = !loginObsecure.value;
   void changeLoginObsecure() {
-  loginObsecure.value = !loginObsecure.value;
-}
-
+    loginObsecure.value = !loginObsecure.value;
+  }
 
   // Login screen form key
   GlobalKey<FormState> loginKey = GlobalKey<FormState>();
@@ -120,11 +119,11 @@ class AuthController extends GetxController {
   // Register function handles user registration by sending a POST request to the server, processing the response
 
   void register() async {
-    registerLoader.value = true; 
+    registerLoader.value = true;
     String endpoint = Endpoints.register;
     final requestData = {
       "email": regEmailController.text,
-      "password": regPasswordController.text, 
+      "password": regPasswordController.text,
       "name": nameController.text,
       "phone": phoneController.text,
       "gender": selectedGender.value,
@@ -142,7 +141,6 @@ class AuthController extends GetxController {
     log("Request Data: $requestData");
 
     try {
-  
       final response = await APIClient(endpoint).post(jsonEncode(requestData));
 
       if (response != null) {
@@ -201,7 +199,6 @@ class AuthController extends GetxController {
     loginLoader.value = true; // Start loading
     String endpoint = Endpoints.login; // login api endpoint
 
-   
     final requestData = {
       "email": loginEmailController.text,
       "password": loginPasswordController.text,
